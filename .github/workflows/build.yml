@@ -1,7 +1,14 @@
 name: Build Caddy L4 Cloudflare
 
 on:
+  schedule:
+    - cron: '0 3 * * 0' # 每周日 UTC 03:00 (北京时间 11:00) 自动拉取上游最新依赖编译
   workflow_dispatch:
+    inputs:
+      no_cache:
+        description: '强制无缓存重新编译 (Ignore Build Cache)'
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -45,6 +52,8 @@ jobs:
         with:
           context: .
           push: true
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' || inputs.no_cache == true }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
